@@ -35,6 +35,29 @@ export TYPESAFE_API_KEY=...   # https://typesafe.ai
 `--dry-run` counts the chunks and prices the sweep without a key, so you can see
 what a run would cost before signing up for anything.
 
+## Backends
+
+askgrep needs one number per chunk, so anything that can produce one will do.
+
+```sh
+askgrep "..."                                      # jev, if TYPESAFE_API_KEY is set
+askgrep "..." -b openai -m gpt-4o-mini             # any OpenAI-compatible endpoint
+askgrep "..." -b openai --base-url http://localhost:11434/v1 -m qwen2.5-coder
+```
+
+**jev** returns a calibrated probability directly. It is what the numbers on this
+page were measured with.
+
+**openai** asks a chat model for a single token and reads the distribution over
+`yes` and `no` at that position, rather than asking it to rate its own confidence
+in prose. That is a distribution the model already computed, and it ranks far
+better than a self-reported number. An endpoint that serves no logprobs falls back
+to the one word it wrote, and scores are then only 0.0 or 1.0, which makes
+`--threshold` meaningless. The footer prints no cost for this backend, because
+askgrep does not know what your endpoint charges.
+
+Scores from different backends never share a cache.
+
 ## Use
 
 ```sh
@@ -90,10 +113,11 @@ you before you spend.
 ## How it works
 
 Files are walked with the same gitignore rules ripgrep uses, split into functions,
-and each one becomes a single yes/no question to [Jev](https://typesafe.ai), a
-model that returns a calibrated probability instead of prose. The probability is
-the score you see. Nothing is generated, so there is nothing to hallucinate: the
-failure mode is a wrong score, not an invented file.
+and each one becomes a single yes/no question. The answer comes back as a
+probability, and that probability is the score you see.
+
+Nothing is generated, so there is nothing to hallucinate. The failure mode is a
+wrong score, never an invented file or a fabricated line number.
 
 ## License
 
