@@ -121,13 +121,29 @@ fn split_file(path: &Path, text: &str, min_bytes: usize, max_bytes: usize) -> Ve
     out
 }
 
+/// `.git` is never source, and its text files are worse than noise: `config`
+/// carries remote URLs, `logs/HEAD` carries the author's name and email on every
+/// line, and `COMMIT_EDITMSG` carries whatever was last being written. Sending
+/// those to a model API is not something a search tool should do quietly, so the
+/// check is explicit rather than left to the hidden-file default.
+fn is_git_internal(path: &Path) -> bool {
+    path.components()
+        .any(|c| c.as_os_str() == ".git")
+}
+
 pub fn collect(root: &Path, min_bytes: usize, max_bytes: usize) -> Vec<Chunk> {
     let mut out = Vec::new();
-    for entry in WalkBuilder::new(root).hidden(false).build().flatten() {
+    // Hidden files are skipped, the same default ripgrep uses. The previous
+    // `hidden(false)` walked `.git`, which was 24% of the chunks on one repo and
+    // shipped git internals to the model.
+    for entry in WalkBuilder::new(root).build().flatten() {
         if !entry.file_type().is_some_and(|t| t.is_file()) {
             continue;
         }
         let path = entry.path();
+        if is_git_internal(path) {
+            continue;
+        }
         // Binary and minified files answer no question worth asking.
         let Ok(text) = std::fs::read_to_string(path) else {
             continue;
@@ -199,6 +215,17 @@ mod tests {
         let heads: Vec<&str> = cs.iter().map(|c| c.head()).collect();
         assert!(heads.iter().any(|h| h.contains("fn get")), "got {heads:?}");
         assert!(heads.iter().any(|h| h.contains("fn put")), "got {heads:?}");
+    }
+
+    #[test]
+    fn git_internals_are_never_chunked() {
+        // Catches the case the hidden-file default misses: a path pointed
+        // straight at .git, or a .git nested inside a submodule.
+        assert!(is_git_internal(Path::new(".git/config")));
+        assert!(is_git_internal(Path::new("/repo/.git/logs/HEAD")));
+        assert!(is_git_internal(Path::new("/repo/vendor/dep/.git/COMMIT_EDITMSG")));
+        assert!(!is_git_internal(Path::new("/repo/src/git.rs")));
+        assert!(!is_git_internal(Path::new("/repo/.github/workflows/ci.yml")));
     }
 
     #[test]

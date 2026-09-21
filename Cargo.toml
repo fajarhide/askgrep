@@ -1,6 +1,6 @@
 [package]
 name = "askgrep"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = ["fajarhide"]
 description = "grep for questions you cannot write as a pattern. Reads every function, not a sample."
