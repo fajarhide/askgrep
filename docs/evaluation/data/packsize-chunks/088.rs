@@ -1,0 +1,86 @@
+pub fn run_diff(args: &[String]) -> Result<()> {
+    if super::wants_help(args) {
+        print_help();
+        return Ok(());
+    }
+    super::check_flags("diff", args, FLAGS)?;
+
+    let cache_dir = crate::paths::cache_directory();
+    let input_path = cache_dir.join("last_input.txt");
+    let output_path = cache_dir.join("last_output.txt");
+
+    if !input_path.exists() || !output_path.exists() {
+        println!(
+            "{}: No recent distillation found to diff. Run a command first!",
+            "info".blue()
+        );
+        return Ok(());
+    }
+
+    let input = fs::read_to_string(input_path)?;
+    let output = fs::read_to_string(output_path)?;
+
+    let savings_pct = if !input.is_empty() {
+        100.0 * (1.0 - output.len() as f64 / input.len() as f64)
+    } else {
+        0.0
+    };
+
+    println!();
+    super::print_rule();
+    println!(
+        " {} {}",
+        "OMNI SIGNAL INTELLIGENCE:".bold().bright_cyan(),
+        "Comparison Mode".bright_white()
+    );
+    super::print_rule();
+
+    // Before Block
+    println!("\n [ {} ]", "RAW INPUT (NOISY)".bold().red());
+    for line in truncate_lines(&input, 12) {
+        println!("  {}", line.bright_black());
+    }
+
+    // After Block
+    println!("\n [ {} ]", "OMNI DISTILLED (SIGNAL)".bold().green());
+    for line in truncate_lines(&output, 12) {
+        println!("  {}", line.bright_white());
+    }
+
+    println!();
+    super::print_rule();
+
+    let savings_str = format!("{:.1}% signal efficiency", savings_pct);
+    let efficiency_colored = if savings_pct > 70.0 {
+        savings_str.bold().bright_green()
+    } else if savings_pct > 30.0 {
+        savings_str.bold().bright_yellow()
+    } else {
+        savings_str.bold().bright_red()
+    };
+
+    let bytes_saved = input.len().saturating_sub(output.len()) as u64;
+
+    println!(
+        " Efficiency: {:<28} Saved: {}",
+        efficiency_colored,
+        format_bytes(bytes_saved).bold().bright_cyan()
+    );
+    println!(
+        " Reduction:  {:<28} Gain:  {}",
+        format!(
+            "{} → {}",
+            format_bytes(input.len() as u64),
+            format_bytes(output.len() as u64)
+        )
+        .bright_black(),
+        format!(
+            "{:.1}x more dense",
+            (input.len() as f64 / output.len().max(1) as f64)
+        )
+        .bright_blue()
+    );
+    super::print_rule();
+
+    Ok(())
+}

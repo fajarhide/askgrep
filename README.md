@@ -148,9 +148,15 @@ scored against a regex that answers the same question exactly:
 
 | chunks per request | precision @0.8 | recall @0.5 |
 | --- | --- | --- |
-| 1 | 0.85 | 1.00 |
-| 5 | 0.65 | 0.93 |
-| 20 | 0.43 | 0.79 |
+| 1 | 1.00 / 1.00 | 1.00 / 1.00 |
+| 5 | 0.60 / 0.71 | 0.93 / 0.93 |
+| 20 | 0.45 / 0.48 | 0.86 / 0.79 |
+
+Two runs of each, on the same pinned chunks, because one run cannot tell a gap
+from noise. Between repeats the scores move 0.012 to 0.036 on average, so the
+gap is not noise. An earlier version of this table read 0.85 / 0.65 / 0.43; it
+was measured against the live source tree rather than a pinned copy, and the
+tree moved.
 
 So askgrep sends one chunk per request and does not offer the alternative. Concurrency
 covers the latency instead: 120 chunks take 10 seconds at 16 jobs, against 135

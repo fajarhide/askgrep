@@ -39,6 +39,26 @@ def run(name, labels_file, jev_file, claude_file):
         print(f"Claude confidence when right {st.mean(right):.1f}, when wrong {st.mean(wrong):.1f}")
 
 
+def packsize():
+    d = load("packsize.json")
+    t = d["truth"]
+
+    def prf(p, thr):
+        tp = sum(1 for a, b in zip(t, p) if a and b >= thr)
+        fp = sum(1 for a, b in zip(t, p) if not a and b >= thr)
+        fn = sum(1 for a, b in zip(t, p) if a and b < thr)
+        return (tp / (tp + fp) if tp + fp else 0.0, tp / (tp + fn) if tp + fn else 0.0)
+
+    print(f"\n=== Experiment 0: chunks per request ({d['positives']} of {d['n']} positive) ===")
+    print(f"{'pack':>5}{'precision@0.8':>20}{'recall@0.5':>20}")
+    for k, reps in d["runs"].items():
+        pr = " / ".join(f"{prf(r['probabilities'], 0.8)[0]:.2f}" for r in reps)
+        rc = " / ".join(f"{prf(r['probabilities'], 0.5)[1]:.2f}" for r in reps)
+        print(f"{k:>5}{pr:>20}{rc:>20}")
+
+
+packsize()
+
 run("Experiment 1: .unwrap() or .expect(), regex ground truth",
     "labels-unwrap.json", "jev-unwrap.json", "claude-unwrap.json")
 run("Experiment 2: silently swallows a failure, hand labels",

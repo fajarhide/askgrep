@@ -7,6 +7,36 @@ independent judges that never saw each other's answers or the answer key).
 Everything here replays from `data/`. The second experiment's numbers should not
 be quoted, and the reason is the most useful thing on this page.
 
+## Experiment 0: how many chunks per request
+
+**Question:** does this chunk contain a call to `.unwrap()` or `.expect(...)`?
+Same regex ground truth as experiment 1, on 120 pinned chunks with 14 positives.
+
+Batching is the obvious saving. TypeSafe measured it and published the result:
+many questions about one shared document in a single call is 12.2x cheaper, 10x
+faster, and changes no answer. askgrep cannot use that shape, because its
+questions are about different functions, so batching means packing unrelated
+chunks into one `state` array and pointing each question at an index.
+
+| chunks per request | precision @0.8 | recall @0.5 | cost | seconds |
+| --- | --- | --- | --- | --- |
+| 1 | 1.00 / 1.00 | 1.00 / 1.00 | $0.0029 | 161 |
+| 5 | 0.60 / 0.71 | 0.93 / 0.93 | $0.0019 | 30 |
+| 20 | 0.45 / 0.48 | 0.86 / 0.79 | $0.0017 | 10 |
+
+Two runs of each. Between repeats the probabilities move 0.012 (pack 1) to
+0.036 (pack 20) on average, and at most 3 of 120 chunks cross the 0.8 threshold,
+so the gap between one and twenty is not run-to-run noise.
+
+Twenty per request is 1.7x cheaper and less than half of its hits are right.
+Latency is not the reason to batch either: one chunk per request takes 161
+seconds sequentially, and 10 seconds at 64 concurrent.
+
+The chunks are committed in `data/packsize-chunks/`. They were not, the first
+time this was measured, and the table then read 0.85 / 0.65 / 0.43 because the
+source tree it sampled had moved between runs. The direction held; the numbers
+did not.
+
 ## Experiment 1: a question a regex can answer
 
 **Question:** does this chunk contain a call to `.unwrap()` or `.expect(...)`?
