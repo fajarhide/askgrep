@@ -2,6 +2,10 @@
 
 grep for the questions you cannot write as a pattern.
 
+**Powered by [Jev](https://typesafe.ai), TypeSafe AI's System One model.** It
+returns a calibrated probability instead of prose, which is what makes reading
+every function affordable rather than sampling a few.
+
 ![askgrep finding two SQL concatenations in a demo tree, then repeating the sweep for free from cache](media/demo.gif)
 
 ```console
@@ -92,8 +96,9 @@ askgrep "..." -b openai -m gpt-4o-mini             # any OpenAI-compatible endpo
 askgrep "..." -b openai --base-url http://localhost:11434/v1 -m qwen2.5-coder
 ```
 
-**jev** returns a calibrated probability directly. It is what the numbers on this
-page were measured with.
+**jev** is [Jev by TypeSafe AI](https://typesafe.ai), the default and what every
+number on this page was measured with. It returns a calibrated probability
+directly, at $0.042 per million input tokens with output free.
 
 **openai** asks a chat model for a single token and reads the distribution over
 `yes` and `no` at that position, rather than asking it to rate its own confidence
@@ -228,6 +233,13 @@ askgrep "builds an SQL query by concatenating a value that came from the request
 ```
 
 `demo.tape` regenerates the GIF with [vhs](https://github.com/charmbracelet/vhs).
+
+## Built on
+
+[Jev](https://typesafe.ai) by TypeSafe AI, a System One model that answers a
+yes/no question with a calibrated probability rather than text. askgrep exists
+because that answer costs $0.042 per million input tokens with output free, and
+at that price there is no reason to read only some of the code.
 
 ## License
 
