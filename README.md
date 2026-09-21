@@ -151,6 +151,11 @@ So askgrep sends one chunk per request and does not offer the alternative. Concu
 covers the latency instead: 120 chunks take 10 seconds at 16 jobs, against 135
 sequential, which is the thing batching was supposed to buy.
 
+That table comes from a question a regex can check exactly, which is what makes it
+checkable at all. A semantic question behaves differently, and worse:
+[docs/evaluation](docs/evaluation) has both runs, the raw answers, and the reason the
+second one's numbers should not be quoted.
+
 ## What it is bad at
 
 **It is not a grep replacement.** If you can write the pattern, write the pattern.

@@ -1,0 +1,23 @@
+{
+  "question": "handles a failure or absent value and continues with a default, empty or fallback value without logging, returning or propagating it",
+  "labelled_by": "session, before running either model",
+  "labels": {
+    "0": true,  "1": true,  "2": false, "3": true,  "4": true,
+    "5": false, "6": true,  "7": true,  "8": true,  "9": true,
+    "10": false,"11": false,"12": false,"13": false,"14": false,
+    "15": true, "16": true, "17": true, "18": false,"19": true,
+    "20": false,"21": false,"22": false,"23": true, "24": true,
+    "25": true, "26": true, "27": true, "28": false,"29": false,
+    "30": false,"31": true, "32": false,"33": true, "34": true,
+    "35": false,"36": true, "37": false,"38": false,"39": false
+  },
+  "borderline": [4, 6, 27, 36],
+  "notes": {
+    "4": "returns a (false,false,false) default when hooks are absent",
+    "6": "None arm silently replaces the value with an empty object",
+    "27": "same shape as 6",
+    "36": "same shape as 6",
+    "2": "propagates with ?, the early return is a guard not a swallow",
+    "10": "expect() panics, it does not swallow"
+  }
+}
