@@ -5,12 +5,15 @@ grep for the questions you cannot write as a pattern.
 ![askgrep finding two SQL concatenations in a demo tree, then repeating the sweep for free from cache](media/demo.gif)
 
 ```console
-$ askgrep "builds SQL by concatenating a value that came from a request" src/
-db/orders.rs:412   0.94  fn search_orders(q: &Query) -> Vec<Order> {
-api/admin.rs:88    0.91  pub fn lookup_by_email(email: &str) -> Option<User> {
+$ askgrep "builds an SQL query by concatenating a value that came from the request." demo/
+orders.py:14  0.99  def search_orders(conn, request):
+report.py:11  0.98  def top_products(conn, request):
 
-2 hits in 1,866 chunks  |  0 cached  |  665,214 tokens  |  $0.0279
+2 hits in 11 chunks  |  0 cached  |  3910 tokens  |  $0.0002
 ```
+
+That is `demo/` in this repo, so you can run the same line and get the same two
+hits. The other three queries there bind their parameters and are left alone.
 
 You already know how to find `.unwrap()`. You do not know how to write the regex
 for "retries without backoff", so today you guess a few patterns and hope.
@@ -37,9 +40,12 @@ is attached to the v0.1.0 release.
 ## Install
 
 ```sh
-cargo install askgrep
+cargo install --git https://github.com/fajarhide/askgrep
 export TYPESAFE_API_KEY=...   # https://typesafe.ai
 ```
+
+Or take a binary from the [latest release](https://github.com/fajarhide/askgrep/releases):
+macOS on Apple silicon or Intel, Linux on musl so it runs on any distro.
 
 `--dry-run` counts the chunks and prices the sweep without a key, so you can see
 what a run would cost before signing up for anything.
@@ -76,8 +82,8 @@ askgrep "still uses the old auth middleware instead of requireSession" --thresho
 askgrep "writes to the database inside a loop" --json | jq -r .file
 ```
 
-Phrase the question as something the code *does*. It is spliced after
-"The code in `state` ", so "builds SQL from user input." reads correctly and
+Phrase the question as something the code *does*. Each backend splices it into a
+sentence about the chunk, so "builds SQL from user input." reads correctly and
 "SQL injection" does not.
 
 | flag | |
@@ -125,7 +131,8 @@ rather than presented as a verdict. Read them.
 **It costs money.** Roughly three cents per thousand functions. `--dry-run` tells
 you before you spend.
 
-**English questions work best.** The model handles other languages, less well.
+**English questions work best.** Other languages are handled, but less well.
+Measure on your own content before trusting a score.
 
 ## How it works
 
