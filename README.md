@@ -27,6 +27,13 @@ askgrep asks about every chunk. A full sweep of a 1,866 function codebase costs
 under three cents, so there is no reason to sample. Complete beats probably
 complete when the question is a security one.
 
+![every function in the demo tree scored in turn, the two that concatenate request values coming back at 0.99 and 0.98](media/sweep.gif)
+
+Every row above was read and scored. The two that came back hot are the two that
+build SQL by concatenation. The [full 28 second
+version](https://github.com/fajarhide/askgrep/releases/download/v0.1.0/askgrep-promo.mp4)
+is attached to the v0.1.0 release.
+
 ## Install
 
 ```sh
