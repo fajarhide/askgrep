@@ -114,12 +114,50 @@ you before you spend.
 
 ## How it works
 
-Files are walked with the same gitignore rules ripgrep uses, split into functions,
-and each one becomes a single yes/no question. The answer comes back as a
-probability, and that probability is the score you see.
+```mermaid
+flowchart LR
+  A["your question<br/>builds SQL from a request"] --> D
+  B["file tree"] --> C["walk<br/>ripgrep's gitignore rules"]
+  C --> CH["split into functions<br/>zero-indent + definition keywords"]
+  CH --> D{"for every chunk<br/>16 in parallel"}
+  D --> E["cache<br/>hash(backend, question, chunk)"]
+  E -->|hit| H
+  E -->|miss| F["Backend::score"]
+  F --> G1["Jev<br/>calibrated probability"]
+  F --> G2["OpenAI-compatible<br/>P(yes) from first-token logprobs"]
+  G1 --> H["0.0 to 1.0"]
+  G2 --> H
+  H --> I["sort by score,<br/>cut at --threshold"]
+  I --> J["file:line  0.99  def search_orders"]
+```
 
-Nothing is generated, so there is nothing to hallucinate. The failure mode is a
-wrong score, never an invented file or a fabricated line number.
+One chunk, one question, one number. Nothing is generated, so the failure mode
+is a wrong score, never an invented file or a fabricated line number.
+
+### What one sweep does
+
+```mermaid
+sequenceDiagram
+  participant You
+  participant askgrep
+  participant Cache as ~/.cache/askgrep
+  participant Model
+
+  You->>askgrep: askgrep "builds SQL from a request." demo/
+  askgrep->>askgrep: walk, split into 11 chunks
+  loop every chunk, 16 at a time
+    askgrep->>Cache: hash(backend, question, chunk)
+    alt already answered
+      Cache-->>askgrep: 0.99
+    else first time
+      askgrep->>Model: this chunk, this one question
+      Model-->>askgrep: 0.99
+      askgrep->>Cache: store
+    end
+  end
+  askgrep-->>You: 2 hits, 11 chunks, 3910 tokens, $0.0002
+  Note over You,Cache: ask again over unchanged files and it costs nothing
+```
 
 ## Reproducing the demo
 
