@@ -127,8 +127,7 @@ fn split_file(path: &Path, text: &str, min_bytes: usize, max_bytes: usize) -> Ve
 /// those to a model API is not something a search tool should do quietly, so the
 /// check is explicit rather than left to the hidden-file default.
 fn is_git_internal(path: &Path) -> bool {
-    path.components()
-        .any(|c| c.as_os_str() == ".git")
+    path.components().any(|c| c.as_os_str() == ".git")
 }
 
 pub fn collect(root: &Path, min_bytes: usize, max_bytes: usize) -> Vec<Chunk> {
@@ -223,9 +222,13 @@ mod tests {
         // straight at .git, or a .git nested inside a submodule.
         assert!(is_git_internal(Path::new(".git/config")));
         assert!(is_git_internal(Path::new("/repo/.git/logs/HEAD")));
-        assert!(is_git_internal(Path::new("/repo/vendor/dep/.git/COMMIT_EDITMSG")));
+        assert!(is_git_internal(Path::new(
+            "/repo/vendor/dep/.git/COMMIT_EDITMSG"
+        )));
         assert!(!is_git_internal(Path::new("/repo/src/git.rs")));
-        assert!(!is_git_internal(Path::new("/repo/.github/workflows/ci.yml")));
+        assert!(!is_git_internal(Path::new(
+            "/repo/.github/workflows/ci.yml"
+        )));
     }
 
     #[test]
