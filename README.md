@@ -18,6 +18,38 @@ hits. The other three queries there bind their parameters and are left alone.
 You already know how to find `.unwrap()`. You do not know how to write the regex
 for "retries without backoff", so today you guess a few patterns and hope.
 
+## What it gives an agent
+
+Ask a coding agent "which functions build SQL from a request" and it has two
+options, both bad. Read the whole tree, or read some of it and guess.
+
+Reading the whole tree is real money. The sweep below is 665,214 input tokens,
+and output tokens are free on a classifier and are not free on a chat model:
+
+| reading 1,866 functions with | input $/Mtok | this sweep |
+| --- | --- | --- |
+| askgrep | 0.042 | **$0.028** |
+| Claude Haiku 4.5 | 1.00 | $0.67 |
+| Claude Sonnet 5 | 2.00 | $1.33 |
+| Claude Opus 5 | 5.00 | $3.33 |
+
+So the agent does the second thing. It greps a few patterns, opens a handful of
+files, and answers from those. You get an answer that sounds complete and has
+never been checked against most of the codebase.
+
+askgrep turns that into a smaller job. It reads all 1,866 functions for under
+three cents and hands back nine line numbers. The agent then opens nine
+functions instead of a thousand, with its context spent on the code that
+matters rather than on everything that did not.
+
+```sh
+askgrep "builds SQL by concatenating a value from a request" --json src/ \
+  | jq -r 'select(.score > 0.9) | "\(.file):\(.line)"'
+```
+
+The cheap model narrows, the expensive one acts. askgrep is only the first half,
+and it is the half nobody wants to pay frontier prices for.
+
 ## It reads everything, not a sample
 
 This is the part that matters. Tools built on an LLM have to sample, because
