@@ -123,6 +123,13 @@ Phrase the question as something the code *does*. Each backend splices it into a
 sentence about the chunk, so "builds SQL from user input." reads correctly and
 "SQL injection" does not.
 
+Phrasing moves the result as much as anything else in this page. On the same 120
+chunks, asking abstractly ("panics instead of returning an error") gave recall
+0.07 at the threshold where the literal form ("contains a call to `.unwrap()` or
+`.expect(...)`") gave 0.71. The model was not failing to read the code, it was
+answering a different question than the one meant. If a sweep comes back empty,
+rewrite the question before deciding the tool cannot see it.
+
 | flag | |
 | --- | --- |
 | `-t, --threshold` | report at or above this score, default `0.8` |
@@ -159,8 +166,19 @@ was measured against the live source tree rather than a pinned copy, and the
 tree moved.
 
 So askgrep sends one chunk per request and does not offer the alternative. Concurrency
-covers the latency instead: 120 chunks take 10 seconds at 16 jobs, against 135
-sequential, which is the thing batching was supposed to buy.
+covers the latency instead, which is the thing batching was supposed to buy. Those
+120 chunks take 161 seconds one at a time. With the cache cleared between runs and
+no 429s at any level:
+
+| jobs | chunks per second |
+| --- | --- |
+| 8 | 12.6 |
+| 16 | 18.7 |
+| 32 | 23.7 |
+| 64 | 28.7 |
+
+The default is 16, which sits just under the published limit of 1,200 requests a
+minute. It was still climbing at 64, so raise `-j` if your account allows it.
 
 That table comes from a question a regex can check exactly, which is what makes it
 checkable at all. A semantic question behaves differently, and worse:
