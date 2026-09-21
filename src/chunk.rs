@@ -32,9 +32,25 @@ impl Chunk {
 /// inside an `impl` and nearly all Python inside a `class`, so a zero-indent rule
 /// alone turns a 5,000 line file into windows all labelled `impl Foo {`.
 const DEFINITION_KEYWORDS: &[&str] = &[
-    "fn ", "pub fn ", "async fn ", "pub async fn ", "def ", "async def ", "func ",
-    "function ", "class ", "impl ", "struct ", "enum ", "trait ", "interface ",
-    "public ", "private ", "protected ", "static ", "const fn ",
+    "fn ",
+    "pub fn ",
+    "async fn ",
+    "pub async fn ",
+    "def ",
+    "async def ",
+    "func ",
+    "function ",
+    "class ",
+    "impl ",
+    "struct ",
+    "enum ",
+    "trait ",
+    "interface ",
+    "public ",
+    "private ",
+    "protected ",
+    "static ",
+    "const fn ",
 ];
 
 /// ponytail: indentation plus a keyword list, swap in tree-sitter if a language
@@ -60,7 +76,9 @@ fn starts_definition(line: &str) -> bool {
 
 fn split_file(path: &Path, text: &str, min_bytes: usize, max_bytes: usize) -> Vec<Chunk> {
     let lines: Vec<&str> = text.lines().collect();
-    let mut bounds: Vec<usize> = (0..lines.len()).filter(|&i| starts_definition(lines[i])).collect();
+    let mut bounds: Vec<usize> = (0..lines.len())
+        .filter(|&i| starts_definition(lines[i]))
+        .collect();
     if bounds.first() != Some(&0) {
         bounds.insert(0, 0);
     }
@@ -91,7 +109,11 @@ fn split_file(path: &Path, text: &str, min_bytes: usize, max_bytes: usize) -> Ve
                 body = format!("{header}\n    // ...\n{body}");
             }
             if body.trim().len() >= min_bytes {
-                out.push(Chunk { file: path.to_path_buf(), line: i + 1, text: body });
+                out.push(Chunk {
+                    file: path.to_path_buf(),
+                    line: i + 1,
+                    text: body,
+                });
             }
             i = j;
         }
@@ -107,7 +129,9 @@ pub fn collect(root: &Path, min_bytes: usize, max_bytes: usize) -> Vec<Chunk> {
         }
         let path = entry.path();
         // Binary and minified files answer no question worth asking.
-        let Ok(text) = std::fs::read_to_string(path) else { continue };
+        let Ok(text) = std::fs::read_to_string(path) else {
+            continue;
+        };
         if text.len() > 2_000_000 || text.lines().any(|l| l.len() > 2_000) {
             continue;
         }
@@ -128,8 +152,14 @@ mod tests {
         assert!(heads.contains(&"fn alpha() {"), "got {heads:?}");
         assert!(heads.contains(&"fn beta() {"), "got {heads:?}");
         let beta = cs.iter().find(|c| c.head() == "fn beta() {").unwrap();
-        assert_eq!(beta.line, 8, "line numbers are 1-indexed and point at the definition");
-        assert!(beta.text.contains("let d = 4;"), "body runs to the next definition");
+        assert_eq!(
+            beta.line, 8,
+            "line numbers are 1-indexed and point at the definition"
+        );
+        assert!(
+            beta.text.contains("let d = 4;"),
+            "body runs to the next definition"
+        );
     }
 
     #[test]
@@ -139,15 +169,26 @@ mod tests {
         let cs = split_file(Path::new("big.rs"), &src, 10, 800);
         assert!(cs.len() > 2, "expected several windows, got {}", cs.len());
         for c in &cs {
-            assert_eq!(c.head(), "fn enormous() {", "every window names the function");
+            assert_eq!(
+                c.head(),
+                "fn enormous() {",
+                "every window names the function"
+            );
         }
     }
 
     #[test]
     fn a_file_with_no_definitions_is_windowed_not_sent_whole() {
-        let src = (0..400).map(|i| format!("    value_{i} = {i}")).collect::<Vec<_>>().join("\n");
+        let src = (0..400)
+            .map(|i| format!("    value_{i} = {i}"))
+            .collect::<Vec<_>>()
+            .join("\n");
         let cs = split_file(Path::new("data.txt"), &src, 10, 500);
-        assert!(cs.len() > 1, "expected windowing, got {} chunk(s)", cs.len());
+        assert!(
+            cs.len() > 1,
+            "expected windowing, got {} chunk(s)",
+            cs.len()
+        );
         assert!(cs.iter().all(|c| c.text.len() <= 600));
     }
 
@@ -164,7 +205,10 @@ mod tests {
     fn closing_braces_and_comments_do_not_start_a_chunk() {
         assert!(!starts_definition("}"));
         assert!(!starts_definition("// a note"));
-        assert!(starts_definition("    fn indented() {"), "a method is a definition");
+        assert!(
+            starts_definition("    fn indented() {"),
+            "a method is a definition"
+        );
         assert!(!starts_definition("    let x = 1;"), "a statement is not");
         assert!(starts_definition("pub fn real() {"));
         assert!(starts_definition("def python_fn():"));

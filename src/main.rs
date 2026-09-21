@@ -46,7 +46,11 @@ struct Args {
     model: Option<String>,
 
     /// OpenAI-compatible base URL, for Groq, OpenRouter, vLLM or Ollama.
-    #[arg(long, env = "ASKGREP_BASE_URL", default_value = "https://api.openai.com/v1")]
+    #[arg(
+        long,
+        env = "ASKGREP_BASE_URL",
+        default_value = "https://api.openai.com/v1"
+    )]
     base_url: String,
 
     /// Count the chunks and price the sweep without calling anything.
@@ -68,16 +72,22 @@ struct Args {
 
 /// Picks the backend and reads its key, or explains what is missing.
 fn build(args: &Args) -> Result<Box<dyn Backend>, String> {
-    let ts = std::env::var("TYPESAFE_API_KEY").ok().filter(|k| !k.is_empty());
-    let oa = std::env::var("OPENAI_API_KEY").ok().filter(|k| !k.is_empty());
+    let ts = std::env::var("TYPESAFE_API_KEY")
+        .ok()
+        .filter(|k| !k.is_empty());
+    let oa = std::env::var("OPENAI_API_KEY")
+        .ok()
+        .filter(|k| !k.is_empty());
     let which = match args.backend {
         Some(w) => w,
         None if ts.is_some() => Which::Jev,
         None if oa.is_some() => Which::Openai,
         None => {
-            return Err("no key found. Set TYPESAFE_API_KEY or OPENAI_API_KEY.\n       \
+            return Err(
+                "no key found. Set TYPESAFE_API_KEY or OPENAI_API_KEY.\n       \
                         Run with --dry-run to size a sweep without one."
-                .into())
+                    .into(),
+            )
         }
     };
     let agent = ureq::AgentBuilder::new()
@@ -86,7 +96,9 @@ fn build(args: &Args) -> Result<Box<dyn Backend>, String> {
     Ok(match which {
         Which::Jev => Box::new(jev::Jev::new(
             ts.ok_or("backend jev needs TYPESAFE_API_KEY")?,
-            args.model.clone().unwrap_or_else(|| jev::DEFAULT_MODEL.into()),
+            args.model
+                .clone()
+                .unwrap_or_else(|| jev::DEFAULT_MODEL.into()),
             agent,
         )),
         Which::Openai => Box::new(openai::OpenAiCompat::new(
@@ -113,7 +125,10 @@ fn main() -> std::process::ExitCode {
     if args.dry_run {
         // Four bytes per token is the usual rule of thumb, plus roughly 60 tokens
         // of instructions on every request.
-        let est: f64 = chunks.iter().map(|c| c.text.len() as f64 / 4.0 + 60.0).sum();
+        let est: f64 = chunks
+            .iter()
+            .map(|c| c.text.len() as f64 / 4.0 + 60.0)
+            .sum();
         println!("{} chunks", chunks.len());
         println!("~{est:.0} input tokens");
         println!("~${:.4} on jev at $0.042/Mtok", est / 1e6 * 0.042);
@@ -163,7 +178,11 @@ fn main() -> std::process::ExitCode {
     // as `:1` cannot be pasted anywhere.
     let show = |p: &std::path::Path| -> String {
         let rel = p.strip_prefix(&args.path).unwrap_or(p);
-        if rel.as_os_str().is_empty() { p.display().to_string() } else { rel.display().to_string() }
+        if rel.as_os_str().is_empty() {
+            p.display().to_string()
+        } else {
+            rel.display().to_string()
+        }
     };
 
     for (p, c) in &hits {
@@ -197,7 +216,10 @@ fn main() -> std::process::ExitCode {
     if !errs.is_empty() {
         // Say how many chunks were never scored. A silent partial sweep looks
         // exactly like a clean one, which is the worst way to be wrong.
-        eprintln!("{} chunk(s) failed, so this sweep is incomplete:", errs.len());
+        eprintln!(
+            "{} chunk(s) failed, so this sweep is incomplete:",
+            errs.len()
+        );
         for (f, e) in errs.iter().take(3) {
             eprintln!("  {}: {e}", f.display());
         }

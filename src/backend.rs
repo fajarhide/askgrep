@@ -110,6 +110,9 @@ mod tests {
 
     #[test]
     fn switching_backend_invalidates_the_cache() {
-        assert_ne!(key("jev:jev-latest", "q", "code"), key("openai:gpt-4o", "q", "code"));
+        assert_ne!(
+            key("jev:jev-latest", "q", "code"),
+            key("openai:gpt-4o", "q", "code")
+        );
     }
 }

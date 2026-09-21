@@ -124,7 +124,11 @@ impl Backend for OpenAiCompat {
     fn id(&self) -> String {
         // The mode is part of the key: a binary 1.0 and a graded 1.0 mean
         // different things and must not be served for one another.
-        let mode = if self.no_logprobs.load(Ordering::Relaxed) { "binary" } else { "logprobs" };
+        let mode = if self.no_logprobs.load(Ordering::Relaxed) {
+            "binary"
+        } else {
+            "logprobs"
+        };
         format!("openai:{}:{}:{mode}", self.base_url, self.model)
     }
 
@@ -147,9 +151,13 @@ impl Backend for OpenAiCompat {
                     let parsed: Response =
                         resp.into_json().map_err(|e| format!("bad response: {e}"))?;
                     if let Some(u) = parsed.usage {
-                        self.tokens.fetch_add(u.prompt_tokens as usize, Ordering::Relaxed);
+                        self.tokens
+                            .fetch_add(u.prompt_tokens as usize, Ordering::Relaxed);
                     }
-                    let choice = parsed.choices.first().ok_or("response carried no choices")?;
+                    let choice = parsed
+                        .choices
+                        .first()
+                        .ok_or("response carried no choices")?;
                     if let Some(p) = choice
                         .logprobs
                         .as_ref()
@@ -159,7 +167,13 @@ impl Backend for OpenAiCompat {
                         return Ok(p);
                     }
                     self.no_logprobs.store(true, Ordering::Relaxed);
-                    let said = choice.message.content.as_deref().unwrap_or("").trim().to_ascii_lowercase();
+                    let said = choice
+                        .message
+                        .content
+                        .as_deref()
+                        .unwrap_or("")
+                        .trim()
+                        .to_ascii_lowercase();
                     return Ok(if said.starts_with('y') { 1.0 } else { 0.0 });
                 }
                 // A 400 here is usually the endpoint refusing logprobs. Drop them
@@ -174,7 +188,10 @@ impl Backend for OpenAiCompat {
                     backoff(attempt);
                 }
                 Err(ureq::Error::Status(c, r)) => {
-                    return Err(format!("HTTP {c}: {}", r.into_string().unwrap_or_default().trim()))
+                    return Err(format!(
+                        "HTTP {c}: {}",
+                        r.into_string().unwrap_or_default().trim()
+                    ))
                 }
                 Err(e) => {
                     last = e.to_string();
@@ -191,13 +208,19 @@ mod tests {
     use super::*;
 
     fn lp(token: &str, p: f64) -> TopLogprob {
-        TopLogprob { token: token.into(), logprob: p.ln() }
+        TopLogprob {
+            token: token.into(),
+            logprob: p.ln(),
+        }
     }
 
     #[test]
     fn reads_the_distribution_not_the_word() {
         let p = probability_of_yes(&[lp("yes", 0.6), lp("no", 0.2)]).unwrap();
-        assert!((p - 0.75).abs() < 1e-4, "0.6 against 0.2 renormalises to 0.75, got {p}");
+        assert!(
+            (p - 0.75).abs() < 1e-4,
+            "0.6 against 0.2 renormalises to 0.75, got {p}"
+        );
     }
 
     #[test]
@@ -216,19 +239,38 @@ mod tests {
     #[test]
     fn the_mode_is_part_of_the_cache_key() {
         let c = OpenAiCompat::new(
-            "t".into(), "m".into(), "https://x/v1/".into(), ureq::AgentBuilder::new().build());
+            "t".into(),
+            "m".into(),
+            "https://x/v1/".into(),
+            ureq::AgentBuilder::new().build(),
+        );
         assert_eq!(c.id(), "openai:https://x/v1:m:logprobs");
         c.no_logprobs.store(true, Ordering::Relaxed);
-        assert_eq!(c.id(), "openai:https://x/v1:m:binary", "a binary score must not reuse a graded one");
+        assert_eq!(
+            c.id(),
+            "openai:https://x/v1:m:binary",
+            "a binary score must not reuse a graded one"
+        );
     }
 
     #[test]
     fn the_question_reads_as_a_sentence() {
         let c = OpenAiCompat::new(
-            "t".into(), "m".into(), "https://x/v1".into(), ureq::AgentBuilder::new().build());
-        let b = c.body("writes to disk without checking the error.", "fn x() {}", true);
+            "t".into(),
+            "m".into(),
+            "https://x/v1".into(),
+            ureq::AgentBuilder::new().build(),
+        );
+        let b = c.body(
+            "writes to disk without checking the error.",
+            "fn x() {}",
+            true,
+        );
         let u = b["messages"][1]["content"].as_str().unwrap();
-        assert!(u.contains("Statement: the code above writes to disk without checking the error."), "{u}");
+        assert!(
+            u.contains("Statement: the code above writes to disk without checking the error."),
+            "{u}"
+        );
         assert!(u.contains("fn x() {}"));
         assert_eq!(b["top_logprobs"], 10);
         assert_eq!(c.body("q", "c", false).get("top_logprobs"), None);

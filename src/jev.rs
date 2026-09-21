@@ -44,7 +44,12 @@ pub struct Jev {
 
 impl Jev {
     pub fn new(token: String, model: String, agent: ureq::Agent) -> Self {
-        Self { token, model, agent, tokens: AtomicUsize::new(0) }
+        Self {
+            token,
+            model,
+            agent,
+            tokens: AtomicUsize::new(0),
+        }
     }
 
     fn body(&self, question: &str, code: &str) -> serde_json::Value {
@@ -102,7 +107,10 @@ impl Backend for Jev {
                     backoff(attempt);
                 }
                 Err(ureq::Error::Status(c, r)) => {
-                    return Err(format!("HTTP {c}: {}", r.into_string().unwrap_or_default().trim()))
+                    return Err(format!(
+                        "HTTP {c}: {}",
+                        r.into_string().unwrap_or_default().trim()
+                    ))
                 }
                 Err(e) => {
                     last = e.to_string();
@@ -120,7 +128,11 @@ mod tests {
 
     #[test]
     fn the_question_is_spliced_into_a_sentence_about_the_state() {
-        let j = Jev::new("t".into(), "jev-latest".into(), ureq::AgentBuilder::new().build());
+        let j = Jev::new(
+            "t".into(),
+            "jev-latest".into(),
+            ureq::AgentBuilder::new().build(),
+        );
         let b = j.body("writes to disk without checking the error.", "fn x() {}");
         assert_eq!(
             b["questions"]["q"]["instructions"],

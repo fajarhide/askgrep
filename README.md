@@ -2,6 +2,8 @@
 
 grep for the questions you cannot write as a pattern.
 
+![askgrep finding two SQL concatenations in a demo tree, then repeating the sweep for free from cache](media/demo.gif)
+
 ```console
 $ askgrep "builds SQL by concatenating a value that came from a request" src/
 db/orders.rs:412   0.94  fn search_orders(q: &Query) -> Vec<Order> {
@@ -118,6 +120,17 @@ probability, and that probability is the score you see.
 
 Nothing is generated, so there is nothing to hallucinate. The failure mode is a
 wrong score, never an invented file or a fabricated line number.
+
+## Reproducing the demo
+
+`demo/` holds the three files in the GIF. Two of the five queries in it build SQL
+by concatenation and the rest bind parameters, so the sweep has a right answer:
+
+```sh
+askgrep "builds an SQL query by concatenating a value that came from the request." demo/
+```
+
+`demo.tape` regenerates the GIF with [vhs](https://github.com/charmbracelet/vhs).
 
 ## License
 
