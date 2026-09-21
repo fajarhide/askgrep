@@ -86,8 +86,15 @@ costs nothing, so the loop of sweep, fix, sweep again is free after the first pa
 
 ## One chunk per request, and why
 
-Packing twenty chunks into one request is 1.7x cheaper and much worse. Measured on
-120 Rust functions, scored against a regex that answers the same question exactly:
+This is not an argument against batching. TypeSafe measured the opposite case and
+published it: many questions about **one shared document** in a single call is 12.2x
+cheaper, 10x faster, and changes no answer, because each question is scored on its own
+against that document.
+
+askgrep cannot use that shape. Its questions are about different functions, so batching
+means packing unrelated chunks into one `state` array and pointing each question at an
+index. That is a different thing, and it costs accuracy. Measured on 120 Rust functions,
+scored against a regex that answers the same question exactly:
 
 | chunks per request | precision @0.8 | recall @0.5 |
 | --- | --- | --- |
@@ -95,8 +102,9 @@ Packing twenty chunks into one request is 1.7x cheaper and much worse. Measured 
 | 5 | 0.65 | 0.93 |
 | 20 | 0.43 | 0.79 |
 
-So askgrep does not offer the option. Concurrency covers the latency instead: 120
-chunks take 10 seconds at 16 jobs, against 135 sequential.
+So askgrep sends one chunk per request and does not offer the alternative. Concurrency
+covers the latency instead: 120 chunks take 10 seconds at 16 jobs, against 135
+sequential, which is the thing batching was supposed to buy.
 
 ## What it is bad at
 
