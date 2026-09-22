@@ -1,0 +1,213 @@
+{
+ "issue_chars": 400,
+ "seconds": 1068.3,
+ "instances": [
+  {
+   "instance_id": "pallets__flask-4045",
+   "repo": "pallets/flask",
+   "gold": [
+    "src/flask/blueprints.py"
+   ],
+   "chunks": 6893,
+   "seconds": 112.3,
+   "askgrep": {
+    "mrr": 0.011235955056179775,
+    "first_rank": 89,
+    "recall@1": 0.0,
+    "recall@5": 0.0,
+    "recall@10": 0.0
+   },
+   "bm25": {
+    "mrr": 0.125,
+    "first_rank": 8,
+    "recall@1": 0.0,
+    "recall@5": 0.0,
+    "recall@10": 1.0
+   }
+  },
+  {
+   "instance_id": "pallets__flask-4992",
+   "repo": "pallets/flask",
+   "gold": [
+    "src/flask/config.py"
+   ],
+   "chunks": 6915,
+   "seconds": 98.2,
+   "askgrep": {
+    "mrr": 0.018518518518518517,
+    "first_rank": 54,
+    "recall@1": 0.0,
+    "recall@5": 0.0,
+    "recall@10": 0.0
+   },
+   "bm25": {
+    "mrr": 1.0,
+    "first_rank": 1,
+    "recall@1": 1.0,
+    "recall@5": 1.0,
+    "recall@10": 1.0
+   }
+  },
+  {
+   "instance_id": "pallets__flask-5063",
+   "repo": "pallets/flask",
+   "gold": [
+    "src/flask/cli.py"
+   ],
+   "chunks": 6899,
+   "seconds": 100.9,
+   "askgrep": {
+    "mrr": 1.0,
+    "first_rank": 1,
+    "recall@1": 1.0,
+    "recall@5": 1.0,
+    "recall@10": 1.0
+   },
+   "bm25": {
+    "mrr": 0.1111111111111111,
+    "first_rank": 9,
+    "recall@1": 0.0,
+    "recall@5": 0.0,
+    "recall@10": 1.0
+   }
+  },
+  {
+   "instance_id": "psf__requests-1963",
+   "repo": "psf/requests",
+   "gold": [
+    "requests/sessions.py"
+   ],
+   "chunks": 9218,
+   "seconds": 0.7,
+   "askgrep": {
+    "mrr": 0.1,
+    "first_rank": 10,
+    "recall@1": 0.0,
+    "recall@5": 0.0,
+    "recall@10": 1.0
+   },
+   "bm25": {
+    "mrr": 0.25,
+    "first_rank": 4,
+    "recall@1": 0.0,
+    "recall@5": 1.0,
+    "recall@10": 1.0
+   }
+  },
+  {
+   "instance_id": "psf__requests-2148",
+   "repo": "psf/requests",
+   "gold": [
+    "requests/models.py"
+   ],
+   "chunks": 9368,
+   "seconds": 146.9,
+   "askgrep": {
+    "mrr": 1.0,
+    "first_rank": 1,
+    "recall@1": 1.0,
+    "recall@5": 1.0,
+    "recall@10": 1.0
+   },
+   "bm25": {
+    "mrr": 0.5,
+    "first_rank": 2,
+    "recall@1": 0.0,
+    "recall@5": 1.0,
+    "recall@10": 1.0
+   }
+  },
+  {
+   "instance_id": "psf__requests-2317",
+   "repo": "psf/requests",
+   "gold": [
+    "requests/sessions.py"
+   ],
+   "chunks": 9449,
+   "seconds": 142.4,
+   "askgrep": {
+    "mrr": 0.1,
+    "first_rank": 10,
+    "recall@1": 0.0,
+    "recall@5": 0.0,
+    "recall@10": 1.0
+   },
+   "bm25": {
+    "mrr": 0.16666666666666666,
+    "first_rank": 6,
+    "recall@1": 0.0,
+    "recall@5": 0.0,
+    "recall@10": 1.0
+   }
+  },
+  {
+   "instance_id": "psf__requests-2674",
+   "repo": "psf/requests",
+   "gold": [
+    "requests/adapters.py"
+   ],
+   "chunks": 9751,
+   "seconds": 155.8,
+   "askgrep": {
+    "mrr": 0.3333333333333333,
+    "first_rank": 3,
+    "recall@1": 0.0,
+    "recall@5": 1.0,
+    "recall@10": 1.0
+   },
+   "bm25": {
+    "mrr": 0.3333333333333333,
+    "first_rank": 3,
+    "recall@1": 0.0,
+    "recall@5": 1.0,
+    "recall@10": 1.0
+   }
+  },
+  {
+   "instance_id": "psf__requests-3362",
+   "repo": "psf/requests",
+   "gold": [
+    "requests/utils.py"
+   ],
+   "chunks": 10468,
+   "seconds": 167.5,
+   "askgrep": {
+    "mrr": 0.05263157894736842,
+    "first_rank": 19,
+    "recall@1": 0.0,
+    "recall@5": 0.0,
+    "recall@10": 0.0
+   },
+   "bm25": {
+    "mrr": 0.16666666666666666,
+    "first_rank": 6,
+    "recall@1": 0.0,
+    "recall@5": 0.0,
+    "recall@10": 1.0
+   }
+  },
+  {
+   "instance_id": "psf__requests-863",
+   "repo": "psf/requests",
+   "gold": [
+    "requests/models.py"
+   ],
+   "chunks": 11758,
+   "seconds": 126.0,
+   "askgrep": {
+    "mrr": 0.03333333333333333,
+    "first_rank": 30,
+    "recall@1": 0.0,
+    "recall@5": 0.0,
+    "recall@10": 0.0
+   },
+   "bm25": {
+    "mrr": 0.3333333333333333,
+    "first_rank": 3,
+    "recall@1": 0.0,
+    "recall@5": 1.0,
+    "recall@10": 1.0
+   }
+  }
+ ]
+}

@@ -153,6 +153,45 @@ rewrite the question before deciding the tool cannot see it.
 Answers are cached on disk by content. Re-running a question over unchanged files
 costs nothing, so the loop of sweep, fix, sweep again is free after the first pass.
 
+## Does it actually find things
+
+<!-- swe-bench:start -->
+Given a GitHub issue from SWE-bench Lite, find the files the real fix
+changed. The gold answer is the fix commit, so nobody had to write a label.
+
+| over 9 instances | recall@1 | recall@5 | recall@10 | MRR |
+| --- | --- | --- | --- | --- |
+| askgrep | 0.22 | 0.33 | 0.56 | 0.294 |
+| BM25, no index | 0.11 | 0.56 | 1.00 | 0.332 |
+
+9 instances from pallets/flask and psf/requests, the two smallest
+repositories in the set. Issue text truncated to 400 characters,
+because askgrep repeats the question once per chunk. Every file is searched,
+docs and tests included.
+
+[benchmarks/swe-bench](benchmarks/swe-bench) has the runner, the raw results
+and what the two choices above do to the number.
+<!-- swe-bench:end -->
+
+**BM25 wins this one, and it is not close.** Plain lexical search with no index
+put the gold file in the top ten every time; askgrep managed it five times out of
+nine, and when it missed it missed by a lot, ranking the right file 89th and 54th.
+
+That is worth reading carefully rather than explaining away. "Which file has to
+change to fix this issue" is a similarity question, and similarity is what BM25
+and embeddings are for. askgrep scores a predicate: it answers "does this code do
+X" one chunk at a time, and an issue report is not a predicate. The one column
+askgrep leads on, recall@1, says the same thing from the other side: when the
+issue happens to name the behaviour sharply, it lands first; when it describes a
+symptom, it is lost.
+
+This agrees with what the rest of the measurements say. On a question a regex can
+check, the score separates cleanly and nothing is missed. On open judgment it
+degrades. The benchmark just puts a standard number on the boundary.
+
+So: if you want the files related to an issue, use [ck](https://github.com/BeaconBay/ck),
+BM25 or an embedding index. Use askgrep when you can write the predicate.
+
 ## One chunk per request, and why
 
 This is not an argument against batching. TypeSafe measured the opposite case and
