@@ -27,22 +27,27 @@ for "retries without backoff", so today you guess a few patterns and hope.
 Ask a coding agent "which functions build SQL from a request" and it has two
 options, both bad. Read the whole tree, or read some of it and guess.
 
-Reading the whole tree is real money. The sweep below is 665,214 input tokens,
-and output tokens are free on a classifier and are not free on a chat model:
+Reading the whole tree is real money. The sweep below is this repository, which
+you can price yourself with `askgrep x . --dry-run`: 819 functions, 116,783
+input tokens. Output tokens are free on a classifier and are not free on a chat
+model.
 
-| reading 1,866 functions with | input $/Mtok | this sweep |
+| reading 819 functions with | input $/Mtok | this sweep |
 | --- | --- | --- |
-| askgrep | 0.042 | **$0.028** |
-| Claude Haiku 4.5 | 1.00 | $0.67 |
-| Claude Sonnet 5 | 2.00 | $1.33 |
-| Claude Opus 5 | 5.00 | $3.33 |
+| askgrep | 0.042 | **$0.0049** |
+| Claude Haiku 4.5 | 1.00 | $0.12 |
+| Claude Sonnet 5 | 2.00 | $0.23 |
+| Claude Opus 5 | 5.00 | $0.58 |
+
+A real application is bigger and the gap scales with it, but this row is one
+you can check on a tree you already have.
 
 So the agent does the second thing. It greps a few patterns, opens a handful of
 files, and answers from those. You get an answer that sounds complete and has
 never been checked against most of the codebase.
 
-askgrep turns that into a smaller job. It reads all 1,866 functions for under
-three cents and hands back nine line numbers. The agent then opens nine
+askgrep turns that into a smaller job. It reads every function for half a cent
+on this repository, and hands back a handful of line numbers. The agent then opens nine
 functions instead of a thousand, with its context spent on the code that
 matters rather than on everything that did not.
 
@@ -62,9 +67,16 @@ similarity and answer from those. When the thing you were looking for sits in a
 file that did not get picked, the answer is "nothing found" and you never learn
 otherwise.
 
-askgrep asks about every chunk. A full sweep of a 1,866 function codebase costs
-under three cents, so there is no reason to sample. Complete beats probably
-complete when the question is a security one.
+askgrep asks about every chunk. A full sweep of this repository costs half a
+cent, so there is no reason to sample. Complete beats probably complete when the
+question is a security one.
+
+What that does not tell you is how often it misses. Cost is the easy half.
+[docs/evaluation](docs/evaluation) has what has been measured so far, which is
+precision and recall on one question with a regex for ground truth, on 120
+pinned chunks. That is not a retrieval benchmark and it is not enough. A
+recall-first benchmark on a standard dataset is the open work, tracked in
+[issue #1](https://github.com/fajarhide/askgrep/issues/1).
 
 ![every function in the demo tree scored in turn, the two that concatenate request values coming back at 0.99 and 0.98](media/sweep.gif)
 
