@@ -153,6 +153,24 @@ rewrite the question before deciding the tool cannot see it.
 Answers are cached on disk by content. Re-running a question over unchanged files
 costs nothing, so the loop of sweep, fix, sweep again is free after the first pass.
 
+## Everything that has been measured
+
+```console
+$ python3 evals.py
+measurement         against                 askgrep           baseline         n  verdict
+chunks per request  20 per request          1.00 precision    0.45           120  win
+score separation    chat model confidence   no overlap        overlaps        40  win
+open judgment       chat model              not usable        not usable      40  void
+retrieval           BM25, no index          0.56 recall@10    1.00             9  loss
+```
+
+Two wins, one loss, one that does not count. It runs offline from committed data,
+so no key and nothing to spend, and `--full` prints every underlying table. The
+void row had an answer key written by a model from the same family as one of its
+two subjects, which is not a benchmark; `docs/evaluation` says so at length.
+
+The loss is the one worth reading. It is next.
+
 ## Does it actually find things
 
 <!-- swe-bench:start -->
